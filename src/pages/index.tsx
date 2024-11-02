@@ -12,6 +12,7 @@ export default function Home() {
                     src={'/background.png'}
                     width={'100%'}
                     height={METRIC.BG_HEIGHT}
+                    draggable={false}
                 />
             </div>
         </>
