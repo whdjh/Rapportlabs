@@ -1,0 +1,210 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Game Development Patterns & Best Practices
+
+## 🎮 **GAME MECHANICS RULES**
+
+### **Game State Management**
+- **ALWAYS** use React state for game mechanics
+- **ALWAYS** separate UI state from game logic
+- **NEVER** use global variables for game state
+- **MUST** implement proper game loop patterns
+
+### **Animation & Physics**
+- **ALWAYS** use `@react-spring/web` for smooth animations
+- **ALWAYS** calculate physics in `useEffect` with proper dependencies
+- **NEVER** use `setInterval` for game loops (use `requestAnimationFrame`)
+- **MUST** optimize for 60fps performance
+
+### **Collision Detection**
+```typescript
+// ALWAYS use this pattern for collision detection
+const checkCollision = (element1: GameElement, element2: GameElement) => {
+    return (
+        element1.x < element2.x + element2.width &&
+        element1.x + element1.width > element2.x &&
+        element1.y < element2.y + element2.height &&
+        element1.y + element1.height > element2.y
+    )
+}
+```
+
+## 🎯 **GAME ELEMENT POSITIONING**
+
+### **Absolute Positioning System**
+```typescript
+// ALWAYS use this pattern for game elements
+const gameElementStyle = {
+    position: 'absolute' as const,
+    left: `${x}px`,
+    top: `${y}px`,
+    width: `${width}px`,
+    height: `${height}px`,
+}
+```
+
+### **Coordinate System**
+- **ALWAYS** use pixel-based coordinates
+- **ALWAYS** calculate positions relative to container
+- **NEVER** use percentage-based positioning for game mechanics
+- **MUST** handle viewport changes properly
+
+## 🖼️ **GAME ASSET MANAGEMENT**
+
+### **Image Loading Patterns**
+```typescript
+// ALWAYS use this pattern for game images
+<img
+    src="/apple.png"
+    width={METRIC.APPLE_HEIGHT}
+    height={METRIC.APPLE_HEIGHT}
+    draggable={false}
+    alt="Game element"
+/>
+```
+
+### **Asset Optimization Rules**
+- **MUST** compress background.png (currently 919KB)
+- **ALWAYS** use WebP format when possible
+- **ALWAYS** implement lazy loading for non-critical assets
+- **NEVER** load assets synchronously
+
+## 🎨 **GAME VISUAL DESIGN**
+
+### **Color Palette**
+```css
+/* Game Color System - ALWAYS use these colors */
+:root {
+    --game-primary: #EC083F;    /* Finish line red */
+    --game-secondary: #e2e2e8;  /* Background gray */
+    --game-accent: #ffffff;     /* Container white */
+    --game-text: #000000;       /* Text black */
+}
+```
+
+### **Visual Hierarchy**
+- **ALWAYS** use z-index for layering
+- **ALWAYS** maintain consistent visual weight
+- **NEVER** use conflicting colors
+- **MUST** ensure sufficient contrast ratios
+
+## 🚀 **GAME PERFORMANCE**
+
+### **Rendering Optimization**
+- **ALWAYS** use `React.memo` for game components
+- **ALWAYS** batch state updates
+- **NEVER** create objects in render functions
+- **MUST** use `useCallback` for event handlers
+
+### **Memory Management**
+- **ALWAYS** cleanup event listeners
+- **ALWAYS** dispose of animations properly
+- **NEVER** create memory leaks with timers
+- **MUST** optimize asset loading
+
+## 🎯 **GAME UX PATTERNS**
+
+### **Touch Interaction**
+```typescript
+// ALWAYS use this pattern for touch events
+const handleTouchStart = useCallback((e: TouchEvent) => {
+    e.preventDefault()
+    // Game logic here
+}, [])
+```
+
+### **Feedback Systems**
+- **ALWAYS** provide visual feedback for interactions
+- **ALWAYS** use haptic feedback when available
+- **NEVER** leave users without feedback
+- **MUST** implement proper error states
+
+## 🔧 **GAME DEVELOPMENT WORKFLOW**
+
+### **Component Structure**
+```typescript
+// ALWAYS follow this game component pattern
+interface GameComponentProps {
+    position: { x: number; y: number }
+    size: { width: number; height: number }
+    onCollision?: () => void
+}
+
+export const GameComponent = ({ position, size, onCollision }: GameComponentProps) => {
+    const style = {
+        position: 'absolute' as const,
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: `${size.width}px`,
+        height: `${size.height}px`,
+    }
+
+    return <div style={style} />
+}
+```
+
+### **Game Loop Pattern**
+```typescript
+// ALWAYS use this pattern for game loops
+useEffect(() => {
+    let animationFrameId: number
+
+    const gameLoop = () => {
+        // Game logic here
+        animationFrameId = requestAnimationFrame(gameLoop)
+    }
+
+    gameLoop()
+
+    return () => {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId)
+        }
+    }
+}, [dependencies])
+```
+
+## 🎮 **GAME TESTING PATTERNS**
+
+### **Unit Testing Game Logic**
+- **ALWAYS** test collision detection functions
+- **ALWAYS** test game state transitions
+- **ALWAYS** test performance critical functions
+- **NEVER** skip testing game mechanics
+
+### **Integration Testing**
+- **ALWAYS** test game flow end-to-end
+- **ALWAYS** test on actual mobile devices
+- **ALWAYS** test performance on low-end devices
+- **MUST** test touch interactions thoroughly
+
+## 🚫 **GAME DEVELOPMENT ANTI-PATTERNS**
+
+### **Performance Anti-Patterns**
+- ❌ **NEVER** use `setInterval` for game loops
+- ❌ **NEVER** create objects in render functions
+- ❌ **NEVER** use synchronous asset loading
+- ❌ **NEVER** forget to cleanup resources
+
+### **Architecture Anti-Patterns**
+- ❌ **NEVER** mix game logic with UI logic
+- ❌ **NEVER** use global state for game mechanics
+- ❌ **NEVER** hardcode game values
+- ❌ **NEVER** ignore mobile performance
+
+## 📊 **GAME METRICS & ANALYTICS**
+
+### **Performance Monitoring**
+- **ALWAYS** track frame rate
+- **ALWAYS** monitor memory usage
+- **ALWAYS** measure load times
+- **MUST** track user interactions
+
+### **Game Analytics**
+- **ALWAYS** track game completion rates
+- **ALWAYS** monitor user engagement
+- **ALWAYS** collect performance metrics
+- **MUST** implement error tracking

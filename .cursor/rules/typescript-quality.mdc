@@ -1,0 +1,236 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# TypeScript & Code Quality Standards
+
+## 🔧 **TYPESCRIPT STRICT RULES**
+
+### **Type Safety Requirements**
+- **MUST** enable strict mode (already enabled in [tsconfig.json](mdc:tsconfig.json))
+- **ALWAYS** define explicit return types for functions
+- **ALWAYS** use proper generic types
+- **NEVER** use `any` type without justification
+
+### **Interface Definitions**
+```typescript
+// ALWAYS define interfaces for all props
+interface ComponentProps {
+    children?: ReactNode
+    className?: string
+    style?: CSSProperties
+}
+
+// ALWAYS use proper typing for game elements
+interface GameElement {
+    x: number
+    y: number
+    width: number
+    height: number
+    id: string
+}
+```
+
+### **Context Typing**
+```typescript
+// ALWAYS properly type Context values
+interface ScreenContextType {
+    width: number
+    height: number
+}
+
+const ScreenContext = createContext<ScreenContextType>({
+    width: 480,
+    height: 0
+})
+```
+
+## 🎯 **FUNCTION & HOOK PATTERNS**
+
+### **Custom Hook Structure**
+```typescript
+// ALWAYS follow this pattern for custom hooks
+export const useGameState = (): GameState => {
+    const [state, setState] = useState<GameState>(initialState)
+    
+    const updateState = useCallback((newState: Partial<GameState>) => {
+        setState(prev => ({ ...prev, ...newState }))
+    }, [])
+    
+    return { state, updateState }
+}
+```
+
+### **Event Handler Typing**
+```typescript
+// ALWAYS properly type event handlers
+const handleClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    // Handler logic
+}, [])
+```
+
+## 📁 **IMPORT & EXPORT RULES**
+
+### **Import Organization**
+```typescript
+// ALWAYS organize imports in this order
+// 1. React and Next.js
+import React, { useState, useCallback } from 'react'
+import type { AppProps } from 'next/app'
+
+// 2. Third-party libraries
+import { useMeasure } from 'react-use'
+import { useSpring } from '@react-spring/web'
+
+// 3. Internal components and utilities
+import { MobileContainer } from '@/components/MobileLayoutContainer'
+import { useInnerSize } from '@/utils/useInnerSize'
+
+// 4. Types and interfaces
+import type { GameState, GameElement } from '@/types/game'
+```
+
+### **Export Patterns**
+```typescript
+// ALWAYS use named exports for components
+export const GameComponent = () => { /* ... */ }
+
+// ALWAYS use named exports for hooks
+export const useGameHook = () => { /* ... */ }
+
+// ALWAYS use default exports for pages
+export default function HomePage() { /* ... */ }
+```
+
+## 🚫 **TYPESCRIPT ANTI-PATTERNS**
+
+### **Type Safety Violations**
+- ❌ **NEVER** use `as any` without proper justification
+- ❌ **NEVER** ignore TypeScript errors
+- ❌ **NEVER** use `@ts-ignore` comments
+- ❌ **NEVER** create untyped functions
+
+### **Code Quality Anti-Patterns**
+- ❌ **NEVER** use `console.log` in production code
+- ❌ **NEVER** create functions with side effects
+- ❌ **NEVER** use mutable state without proper typing
+- ❌ **NEVER** ignore linting errors
+
+## 🔍 **CODE QUALITY STANDARDS**
+
+### **Naming Conventions**
+```typescript
+// ALWAYS use these naming patterns
+const gameState = useState<GameState>()           // camelCase for variables
+const useGameHook = () => {}                     // camelCase for hooks
+const GameComponent = () => {}                   // PascalCase for components
+const GAME_CONSTANTS = { width: 480 }           // UPPER_SNAKE_CASE for constants
+```
+
+### **Error Handling**
+```typescript
+// ALWAYS handle potential errors
+const safeWindowSize = (): WindowSize => {
+    if (typeof window === 'undefined') {
+        return { width: 480, height: 800 }
+    }
+    return { width: window.innerWidth, height: window.innerHeight }
+}
+```
+
+## 🎮 **GAME-SPECIFIC TYPING**
+
+### **Game State Types**
+```typescript
+// ALWAYS define comprehensive game state types
+interface GameState {
+    isPlaying: boolean
+    score: number
+    level: number
+    playerPosition: Position
+    obstacles: Obstacle[]
+    gameTime: number
+}
+
+interface Position {
+    x: number
+    y: number
+}
+
+interface Obstacle {
+    id: string
+    position: Position
+    size: Size
+    type: 'apple' | 'bomb'
+}
+```
+
+### **Game Event Types**
+```typescript
+// ALWAYS type game events properly
+interface GameEvent {
+    type: 'collision' | 'score' | 'gameOver'
+    payload: any
+    timestamp: number
+}
+
+type GameEventHandler = (event: GameEvent) => void
+```
+
+## 🚀 **PERFORMANCE TYPING**
+
+### **Memoization Patterns**
+```typescript
+// ALWAYS use proper typing for memoized components
+const GameElement = React.memo<GameElementProps>(({ position, size }) => {
+    return <div style={{ position: 'absolute', ...position, ...size }} />
+})
+
+// ALWAYS type useCallback dependencies
+const handleGameUpdate = useCallback((newState: Partial<GameState>) => {
+    setGameState(prev => ({ ...prev, ...newState }))
+}, [setGameState])
+```
+
+### **Ref Typing**
+```typescript
+// ALWAYS properly type refs
+const containerRef = useRef<HTMLDivElement>(null)
+const gameCanvasRef = useRef<HTMLCanvasElement>(null)
+
+// ALWAYS type measure hooks
+const [ref, { width, height }] = useMeasure<HTMLDivElement>()
+```
+
+## 📋 **CODE REVIEW CHECKLIST**
+
+### **TypeScript Compliance**
+- [ ] All functions have explicit return types
+- [ ] All props interfaces are defined
+- [ ] No `any` types used
+- [ ] Proper generic types implemented
+- [ ] Context values properly typed
+
+### **Code Quality**
+- [ ] No console.log statements
+- [ ] Proper error handling implemented
+- [ ] Naming conventions followed
+- [ ] No unused imports
+- [ ] No unused variables
+
+### **Performance**
+- [ ] Proper memoization used
+- [ ] Event handlers properly typed
+- [ ] Refs properly typed
+- [ ] No unnecessary re-renders
+
+## 🎯 **SUCCESS METRICS**
+
+- Zero TypeScript errors
+- 100% type coverage
+- Consistent naming conventions
+- Proper error handling
+- Optimized performance
+- Clean, maintainable code

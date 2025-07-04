@@ -1,0 +1,65 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Falling Game - Cursor Rules Overview
+
+## 📁 **Rules Structure**
+
+This project uses specialized Cursor rules for optimal development:
+
+1. **falling-game-main.mdc** - Core development rules
+2. **game-development.mdc** - Game-specific patterns
+3. **typescript-quality.mdc** - TypeScript standards
+4. **mobile-performance.mdc** - Mobile optimization
+
+## 🎯 **Key Principles**
+
+- **Mobile-first**: 480px max-width design
+- **Game-optimized**: Performance-focused development
+- **Type-safe**: Strict TypeScript compliance
+- **Touch-friendly**: Mobile interaction patterns
+
+## 🚀 **Quick Start**
+
+1. Always use `MobileContainer` wrapper
+2. Follow naming conventions strictly
+3. Optimize for 60fps performance
+4. Use proper TypeScript typing
+
+## 📋 **Essential Commands**
+
+- Check mobile viewport first
+- Test on actual devices
+- Monitor performance metrics
+- Follow the checklist before commits
+
+## 🔧 **Development Flow**
+
+1. Create components with proper interfaces
+2. Use inline styles for dynamic elements
+3. Implement touch-friendly interactions
+4. Optimize assets and performance
+5. Test on mobile devices
+
+## 🎮 **Game Development**
+
+- Use absolute positioning for game elements
+- Implement proper collision detection
+- Optimize game loops with requestAnimationFrame
+- Monitor frame rate and memory usage
+
+## 📱 **Mobile Optimization**
+
+- Respect 480px container constraint
+- Use touch-friendly button sizes (44px min)
+- Implement proper touch event handling
+- Optimize for battery life
+
+## 🔍 **Quality Assurance**
+
+- Zero TypeScript errors
+- Consistent naming conventions
+- Performance benchmarks met
+- Mobile-first responsive design
