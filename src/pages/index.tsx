@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { MobileContainer } from '@/components/MobileLayoutContainer'
 import { useInnerSize } from '@/utils/useInnerSize'
 import { GameModal } from '@/components/GameModal'
+import { useSpring, animated } from '@react-spring/web'
 
 const METRIC = {
   BG_HEIGHT: 5000,
@@ -17,12 +18,11 @@ type GameState = 'ready' | 'playing' | 'success' | 'fail'
 export default function Home() {
   const { innerHeight } = useInnerSize()
   const [gameState, setGameState] = useState<GameState>('ready')
-  const [isFalling, setIsFalling] = useState(false)
-  const [distance, setDistance] = useState(METRIC.APPLE_START_DISTANCE)
-  const [showModal, setShowModal] = useState(false)
+  const [isFalling, setIsFalling] = useState<boolean>(false)
+  const [distance, setDistance] = useState<number>(METRIC.APPLE_START_DISTANCE)
+  const [showModal, setShowModal] = useState<boolean>(false)
   const animationRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number | null>(null)
-  const modalTimer = useRef<NodeJS.Timeout | null>(null)
 
   // 도착선 위치 및 사과 월드 내 위치
   const finishLineY = METRIC.BG_HEIGHT - METRIC.FINISH_LINE_HEIGHT - METRIC.FINISH_LINE_MB
@@ -38,6 +38,17 @@ export default function Home() {
 
   // 사과가 내려갈 수 있는 최소 거리
   const minDistance = -METRIC.FINISH_LINE_MB
+
+  // react-spring: 사과 Y좌표 spring
+  const [appleYSpring, apiAppleY] = useSpring(() => ({ y: appleY, config: { tension: 220, friction: 28 } }))
+  // react-spring: 카메라 이동 spring
+  const [cameraYSpring, apiCameraY] = useSpring(() => ({ y: cameraY, config: { tension: 220, friction: 28 } }))
+
+  // spring 값 업데이트
+  useEffect(() => {
+    apiAppleY.start({ y: appleY })
+    apiCameraY.start({ y: cameraY })
+  }, [appleY, cameraY, apiAppleY, apiCameraY])
 
   // 낙하 속도(px/ms)
   const FALL_SPEED = 2.0 // 1ms에 2px = 2000px/s
@@ -141,7 +152,7 @@ export default function Home() {
         onMouseUp={isFalling ? handleTouchEnd : undefined}
       >
         {/* 월드 컨테이너: 배경, 사과, 도착선 등 모두 포함 */}
-        <div
+        <animated.div
           style={{
             position: 'absolute',
             left: 0,
@@ -149,7 +160,7 @@ export default function Home() {
             width: '100vw',
             maxWidth: 480,
             height: METRIC.BG_HEIGHT,
-            transform: `translateY(${cameraY}px)`,
+            transform: cameraYSpring.y.to(y => `translateY(${y}px)`),
             willChange: 'transform',
             zIndex: 1,
           }}
@@ -188,11 +199,11 @@ export default function Home() {
             }}
           />
           {/* 사과 */}
-          <div
+          <animated.div
             style={{
               position: 'absolute',
               left: appleX,
-              top: appleY,
+              top: appleYSpring.y,
               width: METRIC.APPLE_SIZE,
               height: METRIC.APPLE_SIZE,
               display: 'flex',
@@ -221,8 +232,8 @@ export default function Home() {
               alt="사과"
               style={{ display: 'block' }}
             />
-          </div>
-        </div>
+          </animated.div>
+        </animated.div>
         {/* UI: 게임 시작 버튼, 안내 UI는 월드 밖에 고정 */}
         {gameState === 'ready' && (
           <button
