@@ -16,7 +16,7 @@ const METRIC = {
 type GameState = 'ready' | 'playing' | 'success' | 'fail'
 
 export default function Home() {
-  const { innerHeight } = useInnerSize()
+  const { innerHeight, innerWidth } = useInnerSize()
 
   const [gameState, setGameState] = useState<GameState>('ready')
   const [isFalling, setIsFalling] = useState<boolean>(false)
@@ -28,7 +28,7 @@ export default function Home() {
 
   const finishLineY = METRIC.BG_HEIGHT - METRIC.FINISH_LINE_HEIGHT - METRIC.FINISH_LINE_MB
   
-  const appleX = (METRIC.CONTAINER_WIDTH - METRIC.APPLE_SIZE) / 2
+  const appleX = (Math.min(innerWidth || METRIC.CONTAINER_WIDTH, METRIC.CONTAINER_WIDTH) - METRIC.APPLE_SIZE) / 2
   const appleY = finishLineY - distance - METRIC.APPLE_SIZE
 
   // 사과가 항상 화면 중앙(appleScreenY)에 오도록 월드 전체를 카메라 이동
@@ -155,8 +155,7 @@ export default function Home() {
             position: 'absolute',
             left: 0,
             top: 0,
-            width: '100vw',
-            maxWidth: 480,
+            width: Math.min(innerWidth || METRIC.CONTAINER_WIDTH, METRIC.CONTAINER_WIDTH),
             height: METRIC.BG_HEIGHT,
             transform: cameraYSpring.y.to(y => `translateY(${y}px)`),
             willChange: 'transform',
@@ -173,8 +172,7 @@ export default function Home() {
               position: 'absolute',
               left: 0,
               top: 0,
-              width: '100vw',
-              maxWidth: 480,
+              width: Math.min(innerWidth || METRIC.CONTAINER_WIDTH, METRIC.CONTAINER_WIDTH),
               height: '100%',
               objectFit: 'fill',
               userSelect: 'none',
@@ -189,8 +187,7 @@ export default function Home() {
               position: 'absolute',
               left: 0,
               top: finishLineY,
-              width: '100vw',
-              maxWidth: 480,
+              width: Math.min(innerWidth || METRIC.CONTAINER_WIDTH, METRIC.CONTAINER_WIDTH),
               height: METRIC.FINISH_LINE_HEIGHT,
               backgroundColor: '#EC083F',
               zIndex: 2,

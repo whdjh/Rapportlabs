@@ -34,7 +34,7 @@ npm run dev
 
 ### 3. 사과
 - **APPLE_SIZE**: 50 → 요구사항 준수
-- X좌표 = (METRIC.CONTAINER_WIDTH - METRIC.APPLE_SIZE) / 2 → 중앙정렬
+- X좌표 = (Math.min(innerWidth || METRIC.CONTAINER_WIDTH, METRIC.CONTAINER_WIDTH) - METRIC.APPLE_SIZE) / 2 -> 중앙정렬
 - Y좌표 = finishLineY - METRIC.APPLE_START_DISTANCE - METRIC.APPLE_SIZE
 
 ## Spring 애니메이션 시스템
