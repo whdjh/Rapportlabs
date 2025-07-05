@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import { MobileContainer } from '@/components/MobileLayoutContainer'
 
 const METRIC = {
@@ -7,10 +7,11 @@ const METRIC = {
   CONTAINER_WIDTH: 480,
   FINISH_LINE_HEIGHT: 30,
   FINISH_LINE_MB: 640,
-  APPLE_START_DISTANCE: 4000, // m
+  APPLE_START_DISTANCE: 4000,
 }
 
 export default function Home() {
+  const [isReady, setIsReady] = useState(true)
   const appleX = (METRIC.CONTAINER_WIDTH - METRIC.APPLE_SIZE) / 2
   const finishLineY = METRIC.BG_HEIGHT - METRIC.FINISH_LINE_HEIGHT - METRIC.FINISH_LINE_MB
   const appleY = finishLineY - METRIC.APPLE_START_DISTANCE - METRIC.APPLE_SIZE
@@ -75,28 +76,48 @@ export default function Home() {
           />
         </div>
         {/* 게임 시작 버튼 */}
-        <button
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: appleY + METRIC.APPLE_SIZE + 150,
-            transform: 'translateX(-50%)',
-            width: 180,
-            height: 48,
-            borderRadius: 24,
-            border: '3px solid #fff',
-            background: '#7B61FF',
-            color: '#fff',
-            fontSize: 22,
-            fontWeight: 500,
-            boxShadow: '0 2px 8px #0002',
-            cursor: 'pointer',
-            zIndex: 10,
-            userSelect: 'none',
-          }}
-        >
-          게임 시작
-        </button>
+        {isReady && (
+          <button
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: appleY + METRIC.APPLE_SIZE + 150,
+              transform: 'translateX(-50%)',
+              width: 180,
+              height: 48,
+              borderRadius: 24,
+              border: '3px solid #fff',
+              background: '#7B61FF',
+              color: '#fff',
+              fontSize: 22,
+              fontWeight: 500,
+              boxShadow: '0 2px 8px #0002',
+              cursor: 'pointer',
+              zIndex: 10,
+              userSelect: 'none',
+            }}
+            onClick={() => setIsReady(false)}
+          >
+            게임 시작
+          </button>
+        )}
+        {/* 꾹 눌러주세요 이미지 */}
+        {!isReady && (
+          <img
+            src="/click-please.png"
+            alt="꾹 눌러주세요~"
+            draggable={false}
+            style={{
+              position: 'absolute',
+              right: 24,
+              top: appleY + METRIC.APPLE_SIZE + 150,
+              width: 160,
+              zIndex: 20,
+              userSelect: 'none',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
       </div>
     </MobileContainer>
   )
