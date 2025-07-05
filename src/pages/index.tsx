@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { MobileContainer } from '@/components/MobileLayoutContainer'
 import { useInnerSize } from '@/utils/useInnerSize'
+import { GameModal } from '@/components/GameModal'
 
 const METRIC = {
   BG_HEIGHT: 5000,
@@ -11,13 +12,17 @@ const METRIC = {
   APPLE_START_DISTANCE: 4000,
 }
 
+type GameState = 'ready' | 'playing' | 'success' | 'fail'
+
 export default function Home() {
   const { innerHeight } = useInnerSize()
-  const [isReady, setIsReady] = useState(true)
+  const [gameState, setGameState] = useState<GameState>('ready')
   const [isFalling, setIsFalling] = useState(false)
   const [distance, setDistance] = useState(METRIC.APPLE_START_DISTANCE)
+  const [showModal, setShowModal] = useState(false)
   const animationRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number | null>(null)
+  const modalTimer = useRef<NodeJS.Timeout | null>(null)
 
   // 도착선 위치 및 사과 월드 내 위치
   const finishLineY = METRIC.BG_HEIGHT - METRIC.FINISH_LINE_HEIGHT - METRIC.FINISH_LINE_MB
@@ -31,8 +36,27 @@ export default function Home() {
   const maxCameraY = viewportHeight - METRIC.BG_HEIGHT
   const cameraY = Math.max(appleScreenY - appleY, maxCameraY)
 
+  // 사과가 내려갈 수 있는 최소 거리
+  const minDistance = -METRIC.FINISH_LINE_MB
+
   // 낙하 속도(px/ms)
   const FALL_SPEED = 2.0 // 1ms에 2px = 2000px/s
+
+  // 성공/실패 판정 함수
+  const checkResult = useCallback((finalDistance: number) => {
+    if (finalDistance <= minDistance) {
+      setGameState('fail')
+      setTimeout(() => setShowModal(true), 500)
+      return
+    }
+    if (finalDistance >= 0 && finalDistance <= 400) {
+      setGameState('success')
+      setTimeout(() => setShowModal(true), 500)
+      return
+    }
+    setGameState('fail')
+    setTimeout(() => setShowModal(true), 500)
+  }, [minDistance])
 
   // 낙하 애니메이션 루프
   const gameLoop = useCallback((now: number) => {
@@ -42,14 +66,20 @@ export default function Home() {
     lastTimeRef.current = now
     setDistance(prev => {
       const next = prev - delta * FALL_SPEED
-      return Math.max(-200, next)
+      if (next <= minDistance) {
+        setIsFalling(false)
+        checkResult(next)
+        return minDistance
+      }
+      return next
     })
     animationRef.current = requestAnimationFrame(gameLoop)
-  }, [isFalling])
+  }, [isFalling, minDistance, checkResult])
 
   // 낙하 시작/정지 관리
   useEffect(() => {
     if (isFalling) {
+      setGameState('playing')
       animationRef.current = requestAnimationFrame(gameLoop)
     } else {
       if (animationRef.current) cancelAnimationFrame(animationRef.current)
@@ -63,18 +93,31 @@ export default function Home() {
   // 터치/마우스 이벤트 핸들러
   const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault()
-    if (!isFalling) setIsFalling(true)
-  }, [isFalling])
+    if (!isFalling && gameState === 'playing') setIsFalling(true)
+  }, [isFalling, gameState])
   const handleTouchEnd = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault()
-    if (isFalling) setIsFalling(false)
-  }, [isFalling])
+    if (isFalling) {
+      setIsFalling(false)
+      // 성공/실패 판정
+      checkResult(distance)
+    }
+  }, [isFalling, distance, checkResult])
 
-  // 준비 상태에서 게임 시작
+  // 게임 시작
   const handleStart = () => {
-    setIsReady(false)
+    setGameState('playing')
     setDistance(METRIC.APPLE_START_DISTANCE)
     setIsFalling(false)
+    setShowModal(false)
+  }
+
+  // 재시도(초기화)
+  const handleRetry = () => {
+    setGameState('ready')
+    setDistance(METRIC.APPLE_START_DISTANCE)
+    setIsFalling(false)
+    setShowModal(false)
   }
 
   // UI 버튼/안내 위치(사과 기준)
@@ -85,16 +128,17 @@ export default function Home() {
       <div
         style={{
           position: 'relative',
-          width: METRIC.CONTAINER_WIDTH,
+          width: '100vw',
+          maxWidth: 480,
           height: innerHeight || 600,
           margin: '0 auto',
           overflow: 'hidden',
           background: '#e2e2e8',
         }}
-        onTouchStart={!isReady && !isFalling ? handleTouchStart : undefined}
-        onTouchEnd={!isReady ? handleTouchEnd : undefined}
-        onMouseDown={!isReady && !isFalling ? handleTouchStart : undefined}
-        onMouseUp={!isReady ? handleTouchEnd : undefined}
+        onTouchStart={!isFalling && gameState === 'playing' ? handleTouchStart : undefined}
+        onTouchEnd={isFalling ? handleTouchEnd : undefined}
+        onMouseDown={!isFalling && gameState === 'playing' ? handleTouchStart : undefined}
+        onMouseUp={isFalling ? handleTouchEnd : undefined}
       >
         {/* 월드 컨테이너: 배경, 사과, 도착선 등 모두 포함 */}
         <div
@@ -102,7 +146,8 @@ export default function Home() {
             position: 'absolute',
             left: 0,
             top: 0,
-            width: METRIC.CONTAINER_WIDTH,
+            width: '100vw',
+            maxWidth: 480,
             height: METRIC.BG_HEIGHT,
             transform: `translateY(${cameraY}px)`,
             willChange: 'transform',
@@ -119,7 +164,8 @@ export default function Home() {
               position: 'absolute',
               left: 0,
               top: 0,
-              width: '100%',
+              width: '100vw',
+              maxWidth: 480,
               height: '100%',
               objectFit: 'fill',
               userSelect: 'none',
@@ -134,7 +180,8 @@ export default function Home() {
               position: 'absolute',
               left: 0,
               top: finishLineY,
-              width: METRIC.CONTAINER_WIDTH,
+              width: '100vw',
+              maxWidth: 480,
               height: METRIC.FINISH_LINE_HEIGHT,
               backgroundColor: '#EC083F',
               zIndex: 2,
@@ -177,7 +224,7 @@ export default function Home() {
           </div>
         </div>
         {/* UI: 게임 시작 버튼, 안내 UI는 월드 밖에 고정 */}
-        {isReady && (
+        {gameState === 'ready' && (
           <button
             style={{
               position: 'absolute',
@@ -202,7 +249,7 @@ export default function Home() {
             게임 시작
           </button>
         )}
-        {!isReady && !isFalling && (
+        {gameState === 'playing' && !isFalling && (
           <img
             src="/click-please.png"
             alt="꾹 눌러주세요~"
@@ -218,6 +265,13 @@ export default function Home() {
             }}
           />
         )}
+        {/* 성공/실패 모달 */}
+        <GameModal
+          open={showModal}
+          type={gameState === 'success' ? 'success' : 'fail'}
+          distance={Math.abs(Math.round(distance))}
+          onRetry={handleRetry}
+        />
       </div>
     </MobileContainer>
   )
