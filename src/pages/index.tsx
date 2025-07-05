@@ -27,7 +27,9 @@ export default function Home() {
 
   // 카메라: 사과가 항상 화면 중앙(appleScreenY)에 오도록 월드 전체를 이동
   const appleScreenY = 200
-  const cameraY = appleScreenY - appleY
+  const viewportHeight = innerHeight || 600
+  const maxCameraY = viewportHeight - METRIC.BG_HEIGHT
+  const cameraY = Math.max(appleScreenY - appleY, maxCameraY)
 
   // 낙하 속도(px/ms)
   const FALL_SPEED = 2.0 // 1ms에 2px = 2000px/s
@@ -39,8 +41,8 @@ export default function Home() {
     const delta = now - lastTimeRef.current
     lastTimeRef.current = now
     setDistance(prev => {
-      const next = Math.max(0, prev - delta * FALL_SPEED)
-      return next
+      const next = prev - delta * FALL_SPEED
+      return Math.max(-200, next)
     })
     animationRef.current = requestAnimationFrame(gameLoop)
   }, [isFalling])
