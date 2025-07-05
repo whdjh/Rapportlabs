@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { MobileContainer } from '@/components/MobileLayoutContainer'
 
 const METRIC = {
@@ -12,9 +12,58 @@ const METRIC = {
 
 export default function Home() {
   const [isReady, setIsReady] = useState(true)
+  const [isFalling, setIsFalling] = useState(false)
+  const [distance, setDistance] = useState(METRIC.APPLE_START_DISTANCE)
+
+  const animationRef = useRef<number | null>(null)
+  const lastTimeRef = useRef<number | null>(null)
+
   const appleX = (METRIC.CONTAINER_WIDTH - METRIC.APPLE_SIZE) / 2
   const finishLineY = METRIC.BG_HEIGHT - METRIC.FINISH_LINE_HEIGHT - METRIC.FINISH_LINE_MB
-  const appleY = finishLineY - METRIC.APPLE_START_DISTANCE - METRIC.APPLE_SIZE
+  const appleY = finishLineY - distance - METRIC.APPLE_SIZE
+  const FALL_SPEED = 2.0 
+
+  const gameLoop = useCallback((now: number) => {
+    if (!isFalling) return
+    if (lastTimeRef.current === null) lastTimeRef.current = now
+
+    const delta = now - lastTimeRef.current
+
+    lastTimeRef.current = now
+    
+    setDistance(prev => {
+      const next = Math.max(0, prev - delta * FALL_SPEED)
+      return next
+    })
+    animationRef.current = requestAnimationFrame(gameLoop)
+  }, [isFalling])
+
+  useEffect(() => {
+    if (isFalling) {
+      animationRef.current = requestAnimationFrame(gameLoop)
+    } else {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current)
+      lastTimeRef.current = null
+    }
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current)
+    }
+  }, [isFalling, gameLoop])
+
+  const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault()
+    if (!isFalling) setIsFalling(true)
+  }, [isFalling])
+  const handleTouchEnd = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault()
+    if (isFalling) setIsFalling(false)
+  }, [isFalling])
+
+  const handleStart = () => {
+    setIsReady(false)
+    setDistance(METRIC.APPLE_START_DISTANCE)
+    setIsFalling(false)
+  }
 
   return (
     <MobileContainer>
@@ -27,6 +76,11 @@ export default function Home() {
           background: `url('/background.png') no-repeat center top / cover`,
           overflow: 'hidden',
         }}
+        // 안내 UI가 보일 때만 터치 이벤트 활성화
+        onTouchStart={!isReady && !isFalling ? handleTouchStart : undefined}
+        onTouchEnd={!isReady ? handleTouchEnd : undefined}
+        onMouseDown={!isReady && !isFalling ? handleTouchStart : undefined}
+        onMouseUp={!isReady ? handleTouchEnd : undefined}
       >
         {/* 도착선 */}
         <div
@@ -64,7 +118,7 @@ export default function Home() {
               textShadow: '0 1px 2px #fff8',
             }}
           >
-            4000m
+            {Math.round(distance)}m
           </span>
           <img
             src={'/apple.png'}
@@ -96,13 +150,13 @@ export default function Home() {
               zIndex: 10,
               userSelect: 'none',
             }}
-            onClick={() => setIsReady(false)}
+            onClick={handleStart}
           >
             게임 시작
           </button>
         )}
-        {/* 꾹 눌러주세요 이미지 */}
-        {!isReady && (
+        {/* 꾹 눌러주세요~ 안내 UI */}
+        {!isReady && !isFalling && (
           <img
             src="/click-please.png"
             alt="꾹 눌러주세요~"
