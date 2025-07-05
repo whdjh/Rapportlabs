@@ -9,7 +9,7 @@ const METRIC = {
   APPLE_SIZE: 50,
   CONTAINER_WIDTH: 480,
   FINISH_LINE_HEIGHT: 30,
-  FINISH_LINE_MB: 640,
+  FINISH_LINE_MB: 670,
   APPLE_START_DISTANCE: 4000,
 }
 
@@ -37,8 +37,8 @@ export default function Home() {
   const maxCameraY = viewportHeight - METRIC.BG_HEIGHT
   const cameraY = Math.max(appleScreenY - appleY, maxCameraY)
 
-  // 사과가 내려갈 수 있는 최소 거리
-  const minDistance = -METRIC.FINISH_LINE_MB
+  // 사과가 내려갈 수 있는 최소 거리 (도착선 200m 지나치면 자동 실패)
+  const minDistance = -200
 
   // 사과 Y좌표 spring
   const [appleYSpring, apiAppleY] = useSpring(() => ({ y: appleY, config: { tension: 220, friction: 28 } }))
