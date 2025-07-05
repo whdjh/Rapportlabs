@@ -17,20 +17,21 @@ type GameState = 'ready' | 'playing' | 'success' | 'fail'
 
 export default function Home() {
   const { innerHeight } = useInnerSize()
+
   const [gameState, setGameState] = useState<GameState>('ready')
   const [isFalling, setIsFalling] = useState<boolean>(false)
   const [distance, setDistance] = useState<number>(METRIC.APPLE_START_DISTANCE)
   const [showModal, setShowModal] = useState<boolean>(false)
+
   const animationRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number | null>(null)
 
-  // 도착선 위치 및 사과 월드 내 위치
   const finishLineY = METRIC.BG_HEIGHT - METRIC.FINISH_LINE_HEIGHT - METRIC.FINISH_LINE_MB
+  
   const appleX = (METRIC.CONTAINER_WIDTH - METRIC.APPLE_SIZE) / 2
-  // 사과의 월드 내 위치: 도착선에서 distance만큼 위
   const appleY = finishLineY - distance - METRIC.APPLE_SIZE
 
-  // 카메라: 사과가 항상 화면 중앙(appleScreenY)에 오도록 월드 전체를 이동
+  // 사과가 항상 화면 중앙(appleScreenY)에 오도록 월드 전체를 카메라 이동
   const appleScreenY = 200
   const viewportHeight = innerHeight || 600
   const maxCameraY = viewportHeight - METRIC.BG_HEIGHT
@@ -39,9 +40,9 @@ export default function Home() {
   // 사과가 내려갈 수 있는 최소 거리
   const minDistance = -METRIC.FINISH_LINE_MB
 
-  // react-spring: 사과 Y좌표 spring
+  // 사과 Y좌표 spring
   const [appleYSpring, apiAppleY] = useSpring(() => ({ y: appleY, config: { tension: 220, friction: 28 } }))
-  // react-spring: 카메라 이동 spring
+  // 카메라 이동 spring
   const [cameraYSpring, apiCameraY] = useSpring(() => ({ y: cameraY, config: { tension: 220, friction: 28 } }))
 
   // spring 값 업데이트
@@ -51,22 +52,22 @@ export default function Home() {
   }, [appleY, cameraY, apiAppleY, apiCameraY])
 
   // 낙하 속도(px/ms)
-  const FALL_SPEED = 2.0 // 1ms에 2px = 2000px/s
+  const FALL_SPEED = 2.0
 
   // 성공/실패 판정 함수
   const checkResult = useCallback((finalDistance: number) => {
     if (finalDistance <= minDistance) {
       setGameState('fail')
-      setTimeout(() => setShowModal(true), 500)
+      setShowModal(true)
       return
     }
     if (finalDistance >= 0 && finalDistance <= 400) {
       setGameState('success')
-      setTimeout(() => setShowModal(true), 500)
+      setShowModal(true)
       return
     }
     setGameState('fail')
-    setTimeout(() => setShowModal(true), 500)
+    setShowModal(true)
   }, [minDistance])
 
   // 낙하 애니메이션 루프
@@ -130,9 +131,6 @@ export default function Home() {
     setIsFalling(false)
     setShowModal(false)
   }
-
-  // UI 버튼/안내 위치(사과 기준)
-  const buttonY = appleScreenY + METRIC.APPLE_SIZE + 150
 
   return (
     <MobileContainer>
@@ -240,7 +238,7 @@ export default function Home() {
             style={{
               position: 'absolute',
               left: '50%',
-              top: buttonY,
+              top: appleScreenY + METRIC.APPLE_SIZE + 150,
               transform: 'translateX(-50%)',
               width: 180,
               height: 48,
@@ -268,7 +266,7 @@ export default function Home() {
             style={{
               position: 'absolute',
               right: 24,
-              top: buttonY,
+              top: appleScreenY + METRIC.APPLE_SIZE + 150,
               width: 160,
               zIndex: 20,
               userSelect: 'none',
